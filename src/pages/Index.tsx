@@ -17,8 +17,8 @@ interface AntAgent {
   id: string;
   x: number;
   y: number;
-  targetX: number;
-  targetY: number;
+  startX: number;
+  startY: number;
   targetFileId: string;
   isMoving: boolean;
 }
@@ -33,15 +33,15 @@ const Index = () => {
   const fileGridRef = useRef<HTMLDivElement>(null);
   const antContainerRef = useRef<HTMLDivElement>(null);
 
+  // Handle file upload - all files start as PENDING (ready for scan)
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFiles = event.target.files;
     if (!uploadedFiles) return;
 
-    // All uploaded files start as SAFE (pending scan)
     const newFiles: UploadedFile[] = Array.from(uploadedFiles).map((file, index) => ({
       id: `file-${Date.now()}-${index}`,
       name: file.name,
-      status: "safe" as FileStatus, // Initially all files are shown as safe
+      status: "pending" as FileStatus,
     }));
 
     setFiles((prev) => [...prev, ...newFiles]);
@@ -49,6 +49,7 @@ const Index = () => {
     setScanStatus("Files uploaded. Click 'Start Scan' to begin.");
   };
 
+  // Get file position for ant targeting
   const getFilePosition = useCallback((fileId: string) => {
     const fileElement = document.getElementById(fileId);
     const container = antContainerRef.current;
@@ -64,6 +65,7 @@ const Index = () => {
     };
   }, []);
 
+  // Start scan simulation
   const startScan = useCallback(() => {
     if (files.length === 0 || isScanning) return;
 
@@ -71,80 +73,86 @@ const Index = () => {
     setScanComplete(false);
     setDetectionAlert(null);
     setAnts([]);
-    setScanStatus("Scanning in progress...");
+    setScanStatus("🔍 Scanning files...");
 
-    // IMPORTANT: Only 2-3 files become infected (small subset)
-    const numInfected = Math.min(Math.floor(Math.random() * 2) + 1, files.length, 3);
-    const infectedIndices = new Set<number>();
-    
-    while (infectedIndices.size < numInfected && infectedIndices.size < files.length) {
-      infectedIndices.add(Math.floor(Math.random() * files.length));
-    }
+    // Set all files to "scanning" status first
+    setFiles(prev => prev.map(file => ({ ...file, status: "scanning" as FileStatus })));
 
-    const scannedFiles = files.map((file, index) => ({
-      ...file,
-      status: (infectedIndices.has(index) ? "infected" : "safe") as FileStatus,
-    }));
-
+    // After a brief delay, determine which files are infected
     setTimeout(() => {
+      // CRITICAL: Only 2-3 files become infected (random small subset)
+      const numInfected = Math.min(Math.floor(Math.random() * 2) + 2, files.length); // 2-3 files
+      const infectedIndices = new Set<number>();
+      
+      while (infectedIndices.size < numInfected && infectedIndices.size < files.length) {
+        infectedIndices.add(Math.floor(Math.random() * files.length));
+      }
+
+      // Update file statuses: infected files = red, all others = green (safe)
+      const scannedFiles = files.map((file, index) => ({
+        ...file,
+        status: (infectedIndices.has(index) ? "infected" : "safe") as FileStatus,
+      }));
+
       setFiles(scannedFiles);
+      
       const infectedFiles = scannedFiles.filter((f) => f.status === "infected");
       const safeFiles = scannedFiles.filter((f) => f.status === "safe");
 
-      setScanStatus(`Scan complete: ${safeFiles.length} safe, ${infectedFiles.length} infected`);
+      setScanStatus(`✅ Scan complete: ${safeFiles.length} safe, ${infectedFiles.length} infected`);
 
+      // Create ants ONLY for infected files
       if (infectedFiles.length > 0) {
         const containerRect = antContainerRef.current?.getBoundingClientRect();
         const startX = containerRect ? containerRect.width / 2 : 200;
-        const startY = 30;
+        const startY = 20;
 
-        // Ants ONLY target infected files
+        // Create ants that will move toward infected files only
         const newAnts: AntAgent[] = infectedFiles.flatMap((file) => {
           const antCount = Math.floor(Math.random() * 3) + 3; // 3-5 ants per infected file
-          return Array.from({ length: antCount }, (_, antIndex) => ({
-            id: `ant-${file.id}-${antIndex}`,
-            x: startX + (Math.random() - 0.5) * 80,
-            y: startY + Math.random() * 20,
-            targetX: 0,
-            targetY: 0,
-            targetFileId: file.id,
-            isMoving: false,
-          }));
+          return Array.from({ length: antCount }, (_, antIndex) => {
+            const pos = getFilePosition(file.id);
+            return {
+              id: `ant-${file.id}-${antIndex}`,
+              startX: startX + (Math.random() - 0.5) * 100,
+              startY: startY + Math.random() * 15,
+              x: pos.x + (Math.random() - 0.5) * 30,
+              y: pos.y + (Math.random() - 0.5) * 30,
+              targetFileId: file.id,
+              isMoving: false,
+            };
+          });
         });
 
         setAnts(newAnts);
 
+        // Start ant movement after a short delay
         setTimeout(() => {
           setAnts((prevAnts) =>
-            prevAnts.map((ant) => {
-              const pos = getFilePosition(ant.targetFileId);
-              return {
-                ...ant,
-                x: pos.x + (Math.random() - 0.5) * 30,
-                y: pos.y + (Math.random() - 0.5) * 30,
-                targetX: pos.x,
-                targetY: pos.y,
-                isMoving: true,
-              };
-            })
+            prevAnts.map((ant) => ({
+              ...ant,
+              isMoving: true,
+            }))
           );
 
+          // Show detection alert after ants reach infected files
           setTimeout(() => {
             if (infectedFiles.length > 0) {
               setDetectionAlert(infectedFiles[0].name);
             }
             setIsScanning(false);
             setScanComplete(true);
-          }, 1200);
-        }, 400);
+          }, 1400);
+        }, 300);
       } else {
-        setScanStatus("All files are safe! No threats detected.");
+        setScanStatus("✅ All files are safe! No threats detected.");
         setIsScanning(false);
         setScanComplete(true);
       }
-    }, 800);
+    }, 1000);
   }, [files, isScanning, getFilePosition]);
 
+  // Reset simulation completely
   const resetSimulation = () => {
     setFiles([]);
     setAnts([]);
@@ -157,6 +165,7 @@ const Index = () => {
     if (fileInput) fileInput.value = "";
   };
 
+  // Update ant positions on resize
   useEffect(() => {
     const handleResize = () => {
       if (ants.length > 0 && !isScanning) {
@@ -167,8 +176,6 @@ const Index = () => {
               ...ant,
               x: pos.x + (Math.random() - 0.5) * 30,
               y: pos.y + (Math.random() - 0.5) * 30,
-              targetX: pos.x,
-              targetY: pos.y,
             };
           })
         );
@@ -195,7 +202,6 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            {/* Icons */}
             <motion.div 
               className="flex items-center justify-center gap-6 mb-8"
               initial={{ scale: 0.9 }}
@@ -342,10 +348,12 @@ const Index = () => {
             ref={antContainerRef}
             className={`scan-zone min-h-[200px] ${isScanning ? "scan-zone-active" : ""}`}
           >
-            {/* Ants - Only move toward infected files */}
-            {ants.map((ant) => (
-              <Ant key={ant.id} {...ant} />
-            ))}
+            {/* Ants - Only appear for infected files */}
+            <AnimatePresence>
+              {ants.map((ant) => (
+                <Ant key={ant.id} {...ant} />
+              ))}
+            </AnimatePresence>
 
             {/* File Grid */}
             {files.length === 0 ? (
@@ -357,7 +365,7 @@ const Index = () => {
                   <Upload className="w-12 h-12 mb-3 opacity-40" />
                 </motion.div>
                 <p className="font-medium">Upload files to begin</p>
-                <p className="text-sm mt-1 opacity-70">All files start as safe (green)</p>
+                <p className="text-sm mt-1 opacity-70">Files will be scanned for threats</p>
               </div>
             ) : (
               <motion.div
