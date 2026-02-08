@@ -1,12 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Play, RotateCcw, Sparkles, Shield, Zap } from "lucide-react";
+import { Upload, Play, RotateCcw, Shield, Leaf } from "lucide-react";
 import FileCard, { FileStatus } from "@/components/FileCard";
 import Ant from "@/components/Ant";
 import DetectionAlert from "@/components/DetectionAlert";
 import Legend from "@/components/Legend";
-import FloatingShapes from "@/components/decorative/FloatingShapes";
-import AnimatedAntIcon from "@/components/decorative/AnimatedAntIcon";
+import BiologyBackground from "@/components/decorative/BiologyBackground";
 
 interface UploadedFile {
   id: string;
@@ -30,6 +29,7 @@ const Index = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [scanComplete, setScanComplete] = useState(false);
   const [detectionAlert, setDetectionAlert] = useState<string | null>(null);
+  const [scanStatus, setScanStatus] = useState<string>("");
   const fileGridRef = useRef<HTMLDivElement>(null);
   const antContainerRef = useRef<HTMLDivElement>(null);
 
@@ -37,14 +37,16 @@ const Index = () => {
     const uploadedFiles = event.target.files;
     if (!uploadedFiles) return;
 
+    // All uploaded files start as SAFE (pending scan)
     const newFiles: UploadedFile[] = Array.from(uploadedFiles).map((file, index) => ({
       id: `file-${Date.now()}-${index}`,
       name: file.name,
-      status: "pending" as FileStatus,
+      status: "safe" as FileStatus, // Initially all files are shown as safe
     }));
 
     setFiles((prev) => [...prev, ...newFiles]);
     setScanComplete(false);
+    setScanStatus("Files uploaded. Click 'Start Scan' to begin.");
   };
 
   const getFilePosition = useCallback((fileId: string) => {
@@ -69,27 +71,40 @@ const Index = () => {
     setScanComplete(false);
     setDetectionAlert(null);
     setAnts([]);
+    setScanStatus("Scanning in progress...");
 
-    const scannedFiles = files.map((file) => ({
+    // IMPORTANT: Only 2-3 files become infected (small subset)
+    const numInfected = Math.min(Math.floor(Math.random() * 2) + 1, files.length, 3);
+    const infectedIndices = new Set<number>();
+    
+    while (infectedIndices.size < numInfected && infectedIndices.size < files.length) {
+      infectedIndices.add(Math.floor(Math.random() * files.length));
+    }
+
+    const scannedFiles = files.map((file, index) => ({
       ...file,
-      status: (Math.random() > 0.5 ? "infected" : "safe") as FileStatus,
+      status: (infectedIndices.has(index) ? "infected" : "safe") as FileStatus,
     }));
 
     setTimeout(() => {
       setFiles(scannedFiles);
       const infectedFiles = scannedFiles.filter((f) => f.status === "infected");
+      const safeFiles = scannedFiles.filter((f) => f.status === "safe");
+
+      setScanStatus(`Scan complete: ${safeFiles.length} safe, ${infectedFiles.length} infected`);
 
       if (infectedFiles.length > 0) {
         const containerRect = antContainerRef.current?.getBoundingClientRect();
         const startX = containerRect ? containerRect.width / 2 : 200;
-        const startY = 50;
+        const startY = 30;
 
-        const newAnts: AntAgent[] = infectedFiles.flatMap((file, fileIndex) => {
-          const antCount = Math.floor(Math.random() * 2) + 2;
+        // Ants ONLY target infected files
+        const newAnts: AntAgent[] = infectedFiles.flatMap((file) => {
+          const antCount = Math.floor(Math.random() * 3) + 3; // 3-5 ants per infected file
           return Array.from({ length: antCount }, (_, antIndex) => ({
             id: `ant-${file.id}-${antIndex}`,
-            x: startX + (Math.random() - 0.5) * 100,
-            y: startY + Math.random() * 30,
+            x: startX + (Math.random() - 0.5) * 80,
+            y: startY + Math.random() * 20,
             targetX: 0,
             targetY: 0,
             targetFileId: file.id,
@@ -105,8 +120,8 @@ const Index = () => {
               const pos = getFilePosition(ant.targetFileId);
               return {
                 ...ant,
-                x: pos.x + (Math.random() - 0.5) * 40,
-                y: pos.y + (Math.random() - 0.5) * 40,
+                x: pos.x + (Math.random() - 0.5) * 30,
+                y: pos.y + (Math.random() - 0.5) * 30,
                 targetX: pos.x,
                 targetY: pos.y,
                 isMoving: true,
@@ -121,12 +136,13 @@ const Index = () => {
             setIsScanning(false);
             setScanComplete(true);
           }, 1200);
-        }, 300);
+        }, 400);
       } else {
+        setScanStatus("All files are safe! No threats detected.");
         setIsScanning(false);
         setScanComplete(true);
       }
-    }, 500);
+    }, 800);
   }, [files, isScanning, getFilePosition]);
 
   const resetSimulation = () => {
@@ -135,6 +151,7 @@ const Index = () => {
     setIsScanning(false);
     setScanComplete(false);
     setDetectionAlert(null);
+    setScanStatus("");
     
     const fileInput = document.getElementById("file-input") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
@@ -148,8 +165,8 @@ const Index = () => {
             const pos = getFilePosition(ant.targetFileId);
             return {
               ...ant,
-              x: pos.x + (Math.random() - 0.5) * 40,
-              y: pos.y + (Math.random() - 0.5) * 40,
+              x: pos.x + (Math.random() - 0.5) * 30,
+              y: pos.y + (Math.random() - 0.5) * 30,
               targetX: pos.x,
               targetY: pos.y,
             };
@@ -166,96 +183,94 @@ const Index = () => {
   const safeCount = files.filter((f) => f.status === "safe").length;
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <FloatingShapes />
+    <div className="min-h-screen bg-background relative overflow-hidden leaf-pattern">
+      <BiologyBackground />
       
-      {/* Header Section */}
-      <header className="py-16 sm:py-24 relative">
+      {/* Hero Section */}
+      <header className="py-16 sm:py-20 relative">
         <div className="section-container">
           <motion.div 
             className="text-center"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
+            {/* Icons */}
             <motion.div 
-              className="flex items-center justify-center gap-4 mb-8"
-              initial={{ scale: 0.8 }}
+              className="flex items-center justify-center gap-6 mb-8"
+              initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
+              transition={{ delay: 0.2 }}
             >
-              <AnimatedAntIcon className="w-16 h-16" />
-              <div className="w-px h-12 bg-gradient-to-b from-transparent via-border to-transparent" />
-              <Shield className="w-12 h-12 text-primary" />
+              <motion.span 
+                className="text-5xl"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                🐜
+              </motion.span>
+              <Shield className="w-10 h-10 text-primary" />
             </motion.div>
             
-            <h1 className="text-4xl sm:text-6xl font-bold heading-gradient mb-6 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold heading-nature mb-4 tracking-tight">
               Ant Colony Optimization
             </h1>
             
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              An interactive simulation of antivirus optimization 
-              <span className="text-foreground font-medium"> inspired by nature</span>
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              A biology-inspired simulation of antivirus optimization
             </p>
 
             <motion.div 
-              className="mt-8 flex justify-center"
+              className="mt-6 flex justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.4 }}
             >
-              <span className="section-badge">
-                <Sparkles className="w-4 h-4" />
-                Bio-Inspired Computing
+              <span className="badge-nature">
+                <Leaf className="w-4 h-4" />
+                Nature + Technology
               </span>
             </motion.div>
           </motion.div>
         </div>
       </header>
 
-      <main className="section-container pb-16 space-y-8">
-        {/* Explanation Section */}
+      <main className="section-container pb-16 space-y-6">
+        {/* How It Works Section */}
         <motion.section 
-          className="card-elevated"
-          initial={{ opacity: 0, y: 20 }}
+          className="card-leaf"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 flex items-center gap-2">
+            <span className="text-2xl">🌿</span>
+            How Does It Work?
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Ant Colony Optimization is inspired by how ants find food. When ants discover a food source, 
+            they leave pheromone trails that attract other ants. Antivirus software uses this idea to 
+            <span className="text-foreground font-semibold"> focus more scanning effort on suspicious files </span>
+            instead of scanning everything equally.
+          </p>
+        </motion.section>
+
+        {/* File Upload & Scan Section */}
+        <motion.section 
+          className="card-nature"
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="flex items-start gap-5">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/15 to-secondary/10 shrink-0">
-              <Zap className="w-7 h-7 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3">
-                How Does It Work?
-              </h2>
-              <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
-                Ant Colony Optimization is inspired by how ants find food. When ants discover a food source, 
-                they leave pheromone trails that attract other ants. Similarly, antivirus software uses this 
-                idea to <span className="text-foreground font-medium">focus more scanning resources on suspicious files</span>, 
-                detecting viruses faster and more efficiently instead of scanning everything equally.
-              </p>
-            </div>
-          </div>
-        </motion.section>
-
-        {/* File Upload Section */}
-        <motion.section 
-          className="card-elevated"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-2 h-8 rounded-full bg-gradient-to-b from-primary to-secondary" />
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground">
-              Scan Simulation
-            </h2>
-          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+            <span className="text-2xl">📁</span>
+            File Upload & Scan
+          </h2>
           
-          <div className="flex flex-wrap gap-4 mb-8">
-            <label className="btn-primary cursor-pointer group">
-              <Upload className="w-5 h-5 transition-transform group-hover:-translate-y-0.5" />
+          {/* Control Panel */}
+          <div className="flex flex-wrap gap-3 mb-6">
+            <label className="btn-nature cursor-pointer">
+              <Upload className="w-5 h-5" />
               Upload Files
               <input
                 id="file-input"
@@ -269,78 +284,94 @@ const Index = () => {
             <button
               onClick={startScan}
               disabled={files.length === 0 || isScanning}
-              className="btn-success disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              className="btn-scan disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play className="w-5 h-5" />
               {isScanning ? "Scanning..." : "Start Scan"}
             </button>
             
-            <button onClick={resetSimulation} className="btn-secondary">
+            <button onClick={resetSimulation} className="btn-soft">
               <RotateCcw className="w-5 h-5" />
-              Reset
+              Reset Simulation
             </button>
           </div>
 
-          {/* Scan Statistics */}
+          {/* Status Message */}
+          {scanStatus && (
+            <motion.div 
+              className="mb-6 p-4 rounded-2xl bg-muted/50 border border-border"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              <p className="text-sm font-medium text-foreground">{scanStatus}</p>
+            </motion.div>
+          )}
+
+          {/* Statistics */}
           <AnimatePresence>
             {scanComplete && files.length > 0 && (
               <motion.div 
-                className="grid grid-cols-3 gap-4 mb-8"
+                className="grid grid-cols-3 gap-3 mb-6"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
               >
-                <div className="stat-card">
-                  <p className="text-3xl font-bold text-foreground">{files.length}</p>
-                  <p className="text-sm text-muted-foreground font-medium mt-1">Total Files</p>
+                <div className="stat-nature">
+                  <p className="text-2xl font-bold text-foreground">{files.length}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Total</p>
                 </div>
-                <div className="stat-card border-2 border-success/20">
-                  <p className="text-3xl font-bold text-success">{safeCount}</p>
-                  <p className="text-sm text-muted-foreground font-medium mt-1">Safe</p>
+                <div className="stat-nature border-2 border-success/30">
+                  <p className="text-2xl font-bold text-success">{safeCount}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Safe</p>
                 </div>
-                <div className="stat-card border-2 border-destructive/20">
-                  <p className="text-3xl font-bold text-destructive">{infectedCount}</p>
-                  <p className="text-sm text-muted-foreground font-medium mt-1">Infected</p>
+                <div className="stat-nature border-2 border-destructive/30">
+                  <p className="text-2xl font-bold text-destructive">{infectedCount}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Infected</p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Ant Visualization Container */}
+          {/* Legend - Always Visible */}
+          <div className="mb-6">
+            <Legend />
+          </div>
+
+          {/* Simulation Zone */}
           <div
             ref={antContainerRef}
-            className={`scan-zone min-h-[220px] ${isScanning ? "scan-zone-active" : ""}`}
+            className={`scan-zone min-h-[200px] ${isScanning ? "scan-zone-active" : ""}`}
           >
-            {/* Ants */}
+            {/* Ants - Only move toward infected files */}
             {ants.map((ant) => (
               <Ant key={ant.id} {...ant} />
             ))}
 
             {/* File Grid */}
             {files.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center h-44 text-muted-foreground">
                 <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
                 >
-                  <Upload className="w-14 h-14 mb-4 opacity-40" />
+                  <Upload className="w-12 h-12 mb-3 opacity-40" />
                 </motion.div>
-                <p className="text-lg font-medium">Upload files to begin</p>
-                <p className="text-sm mt-1 opacity-70">Drop your files here or click upload</p>
+                <p className="font-medium">Upload files to begin</p>
+                <p className="text-sm mt-1 opacity-70">All files start as safe (green)</p>
               </div>
             ) : (
               <motion.div
                 ref={fileGridRef}
-                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"
+                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
                 {files.map((file, index) => (
                   <motion.div
                     key={file.id}
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * 0.04 }}
                   >
                     <FileCard
                       id={file.id}
@@ -354,52 +385,39 @@ const Index = () => {
           </div>
         </motion.section>
 
-        {/* Legend Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Legend />
-        </motion.div>
-
         {/* Conclusion Section */}
         <motion.section 
-          className="card-glass relative overflow-hidden"
-          initial={{ opacity: 0, y: 20 }}
+          className="card-leaf"
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.4 }}
         >
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-success/10 to-transparent rounded-full blur-2xl" />
-          <div className="relative">
-            <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">
-              Key Takeaway
-            </h2>
-            <p className="text-muted-foreground leading-relaxed text-base sm:text-lg">
-              This simulation demonstrates how Ant Colony Optimization improves antivirus efficiency 
-              by prioritizing high-risk files. Just like ants concentrate on the best food sources, 
-              the scanning agents focus their resources on infected files, making virus detection 
-              <span className="text-foreground font-medium"> faster and more effective</span>. 
-              This bio-inspired approach represents the intersection of biology and computer science.
-            </p>
-          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-3 flex items-center gap-2">
+            <span className="text-2xl">🎯</span>
+            Key Takeaway
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            This simulation shows how Ant Colony Optimization improves antivirus efficiency 
+            by prioritizing high-risk files. Just like ants concentrate on the best food sources, 
+            scanning agents focus their resources on infected files, making virus detection 
+            <span className="text-foreground font-semibold"> faster and more effective</span>.
+          </p>
         </motion.section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-10 mt-10 bg-muted/30">
+      <footer className="border-t border-border/50 py-8 bg-muted/20">
         <div className="section-container text-center">
-          <p className="text-sm text-muted-foreground font-medium">
+          <p className="text-sm text-muted-foreground">
             Educational Demonstration of Ant Colony Optimization
           </p>
           <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-2">
-            <span>🐜</span>
-            <span>Inspired by nature, applied to cybersecurity</span>
+            🐜 Inspired by nature, applied to cybersecurity 🛡️
           </p>
         </div>
       </footer>
 
-      {/* Detection Alert */}
+      {/* Detection Alert - Only for infected files */}
       <AnimatePresence>
         {detectionAlert && (
           <DetectionAlert

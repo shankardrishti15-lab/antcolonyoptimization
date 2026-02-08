@@ -1,4 +1,4 @@
-import { FileText, Shield, ShieldAlert, Clock } from "lucide-react";
+import { FileText, Shield, ShieldAlert } from "lucide-react";
 
 export type FileStatus = "pending" | "safe" | "infected";
 
@@ -12,21 +12,21 @@ const FileCard = ({ fileName, status, id }: FileCardProps) => {
   const statusConfig = {
     pending: {
       className: "file-card file-card-pending",
-      icon: <Clock className="w-5 h-5 text-muted-foreground" />,
+      icon: <Shield className="w-4 h-4 text-muted-foreground" />,
       label: "Pending",
       labelClass: "text-muted-foreground",
     },
     safe: {
       className: "file-card file-card-safe",
-      icon: <Shield className="w-5 h-5 text-success" />,
+      icon: <Shield className="w-4 h-4 text-success" />,
       label: "Safe",
-      labelClass: "text-success",
+      labelClass: "text-success font-semibold",
     },
     infected: {
-      className: "file-card file-card-infected animate-pulse-glow",
-      icon: <ShieldAlert className="w-5 h-5 text-destructive" />,
+      className: "file-card file-card-infected animate-pulse-soft",
+      icon: <ShieldAlert className="w-4 h-4 text-destructive" />,
       label: "Infected",
-      labelClass: "text-destructive",
+      labelClass: "text-destructive font-semibold",
     },
   };
 
@@ -34,15 +34,15 @@ const FileCard = ({ fileName, status, id }: FileCardProps) => {
 
   return (
     <div id={id} className={config.className}>
-      <div className="flex items-start gap-3">
-        <div className="p-2 bg-muted rounded-lg">
-          <FileText className="w-6 h-6 text-muted-foreground" />
+      <div className="flex items-start gap-2">
+        <div className="p-2 bg-muted/50 rounded-xl">
+          <FileText className="w-5 h-5 text-muted-foreground" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-foreground truncate">{fileName}</p>
-          <div className="flex items-center gap-1.5 mt-1">
+          <p className="font-medium text-foreground truncate text-sm">{fileName}</p>
+          <div className="flex items-center gap-1 mt-1">
             {config.icon}
-            <span className={`text-sm font-medium ${config.labelClass}`}>
+            <span className={`text-xs ${config.labelClass}`}>
               {config.label}
             </span>
           </div>
