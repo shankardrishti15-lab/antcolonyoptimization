@@ -2,54 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 220 25% 97%;
-    --foreground: 230 25% 18%;
+    /* Biology-themed soft nature palette */
+    --background: 45 30% 97%;
+    --foreground: 150 25% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 230 25% 18%;
+    --card: 45 40% 99%;
+    --card-foreground: 150 25% 20%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 230 25% 18%;
+    --popover: 45 40% 99%;
+    --popover-foreground: 150 25% 20%;
 
-    --primary: 220 85% 55%;
+    --primary: 150 45% 40%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 160 45% 45%;
+    --secondary: 200 35% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 20% 94%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 45 25% 92%;
+    --muted-foreground: 150 15% 45%;
 
-    --accent: 35 90% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 150 50% 85%;
+    --accent-foreground: 150 45% 25%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 0 55% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 155 65% 42%;
+    --success: 145 55% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 40 95% 55%;
-    --warning-foreground: 230 25% 18%;
+    --warning: 40 90% 55%;
+    --warning-foreground: 150 25% 20%;
 
-    --border: 220 20% 88%;
-    --input: 220 20% 88%;
-    --ring: 220 85% 55%;
+    --border: 150 20% 85%;
+    --input: 150 20% 85%;
+    --ring: 150 45% 40%;
 
     --radius: 1rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 45 30% 98%;
+    --sidebar-foreground: 150 20% 30%;
+    --sidebar-primary: 150 45% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 150 30% 94%;
+    --sidebar-accent-foreground: 150 45% 25%;
+    --sidebar-border: 150 20% 88%;
+    --sidebar-ring: 150 45% 40%;
   }
 }
 
@@ -60,125 +61,133 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Quicksand', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Nunito', system-ui, sans-serif;
   }
 }
 
 @layer components {
-  .card-elevated {
-    @apply bg-card rounded-2xl shadow-xl border border-border/40 p-6 md:p-8 backdrop-blur-sm;
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.3) 100%);
+  /* Biology-themed cards with organic feel */
+  .card-nature {
+    @apply bg-card rounded-3xl shadow-lg border border-border/50 p-6 md:p-8;
+    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(45 35% 96%) 100%);
   }
 
-  .card-subtle {
-    @apply bg-card rounded-xl shadow-md border border-border/50 p-5;
-  }
-
-  .card-glass {
-    @apply bg-card/80 backdrop-blur-md rounded-2xl border border-border/30 p-6 shadow-lg;
+  .card-leaf {
+    @apply bg-card rounded-2xl shadow-md border border-success/20 p-5;
+    background: linear-gradient(135deg, hsl(var(--success) / 0.05) 0%, hsl(var(--card)) 100%);
   }
 
   .section-container {
-    @apply max-w-5xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-primary-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98];
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(220 85% 45%) 100%);
+  /* Organic button styles */
+  .btn-nature {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-primary text-primary-foreground font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98];
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(150 50% 35%) 100%);
   }
 
-  .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-card text-foreground font-semibold rounded-xl border-2 border-border hover:border-primary/50 hover:bg-muted/50 transition-all duration-300 active:scale-[0.98];
+  .btn-soft {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-card text-foreground font-semibold rounded-full border-2 border-border hover:border-primary/40 hover:bg-accent/30 transition-all duration-300 active:scale-[0.98];
   }
 
-  .btn-success {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-success text-success-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98];
-    background: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(155 65% 35%) 100%);
+  .btn-scan {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-secondary text-secondary-foreground font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98];
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(200 40% 45%) 100%);
   }
 
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-destructive text-destructive-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98];
-  }
-
+  /* File cards with clear status distinction */
   .file-card {
-    @apply relative bg-card rounded-xl border-2 p-4 transition-all duration-300;
+    @apply relative bg-card rounded-2xl border-2 p-4 transition-all duration-300;
   }
 
   .file-card-safe {
-    @apply border-success/60 shadow-lg;
-    background: linear-gradient(135deg, hsl(var(--success) / 0.08) 0%, hsl(var(--success) / 0.02) 100%);
-    box-shadow: 0 4px 20px -4px hsl(var(--success) / 0.25);
+    @apply border-success/50;
+    background: linear-gradient(145deg, hsl(145 60% 95%) 0%, hsl(145 50% 92%) 100%);
+    box-shadow: 0 4px 15px -3px hsl(var(--success) / 0.15);
   }
 
   .file-card-infected {
-    @apply border-destructive/60 shadow-lg;
-    background: linear-gradient(135deg, hsl(var(--destructive) / 0.08) 0%, hsl(var(--destructive) / 0.02) 100%);
-    box-shadow: 0 4px 20px -4px hsl(var(--destructive) / 0.25);
+    @apply border-destructive/50;
+    background: linear-gradient(145deg, hsl(0 60% 96%) 0%, hsl(0 50% 93%) 100%);
+    box-shadow: 0 4px 15px -3px hsl(var(--destructive) / 0.2);
   }
 
   .file-card-pending {
     @apply border-border bg-card hover:border-primary/30 hover:shadow-md;
   }
 
+  /* Legend styling */
   .legend-dot {
-    @apply w-3.5 h-3.5 rounded-full ring-2 ring-offset-2 ring-offset-card;
+    @apply w-4 h-4 rounded-full;
   }
 
   .legend-dot-safe {
-    @apply bg-success ring-success/30;
+    @apply bg-success;
+    box-shadow: 0 0 8px hsl(var(--success) / 0.4);
   }
 
   .legend-dot-infected {
-    @apply bg-destructive ring-destructive/30;
+    @apply bg-destructive;
+    box-shadow: 0 0 8px hsl(var(--destructive) / 0.4);
   }
 
   .legend-dot-pending {
-    @apply bg-muted-foreground ring-muted-foreground/30;
+    @apply bg-muted-foreground/40;
   }
 
+  /* Detection alert */
   .detection-alert {
-    @apply fixed bottom-6 right-6 max-w-sm bg-card rounded-2xl shadow-2xl border-2 border-destructive/40 p-6 animate-slide-up z-50;
-    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--destructive) / 0.05) 100%);
+    @apply fixed bottom-6 right-6 max-w-sm bg-card rounded-3xl shadow-2xl border-2 border-destructive/30 p-6 animate-slide-up z-50;
+    background: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(0 40% 98%) 100%);
   }
 
+  /* Ant agent styling */
   .ant-agent {
     @apply absolute text-2xl transition-all duration-1000 ease-out z-10;
-    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.25));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
   }
 
-  .heading-gradient {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--foreground)) 100%);
+  /* Biology-themed heading */
+  .heading-nature {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  .section-badge {
-    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--secondary) / 0.1) 100%);
+  /* Info badge */
+  .badge-nature {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold;
+    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(150 40% 90%) 100%);
     color: hsl(var(--primary));
   }
 
-  .stat-card {
-    @apply flex flex-col items-center p-4 rounded-xl;
-    background: linear-gradient(135deg, hsl(var(--muted) / 0.5) 0%, hsl(var(--muted) / 0.2) 100%);
+  /* Stats display */
+  .stat-nature {
+    @apply flex flex-col items-center p-4 rounded-2xl;
+    background: linear-gradient(145deg, hsl(var(--muted) / 0.6) 0%, hsl(var(--muted) / 0.3) 100%);
   }
 
+  /* Scan zone */
   .scan-zone {
-    @apply relative rounded-2xl p-6 md:p-8;
-    background: 
-      linear-gradient(135deg, hsl(var(--muted) / 0.4) 0%, hsl(var(--muted) / 0.1) 100%);
+    @apply relative rounded-3xl p-6 md:p-8;
+    background: linear-gradient(145deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--muted) / 0.1) 100%);
     border: 2px dashed hsl(var(--border));
   }
 
   .scan-zone-active {
     border-color: hsl(var(--primary) / 0.5);
-    background: 
-      linear-gradient(135deg, hsl(var(--primary) / 0.05) 0%, hsl(var(--muted) / 0.1) 100%);
+    background: linear-gradient(145deg, hsl(var(--primary) / 0.03) 0%, hsl(var(--muted) / 0.1) 100%);
+  }
+
+  /* Organic decorative leaf pattern */
+  .leaf-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5c-8 8-20 15-20 25s12 17 20 25c8-8 20-15 20-25s-12-17-20-25z' fill='%2322c55e' fill-opacity='0.03'/%3E%3C/svg%3E");
   }
 }
 
@@ -186,7 +195,7 @@
   @keyframes slide-up {
     from {
       opacity: 0;
-      transform: translateY(30px) scale(0.95);
+      transform: translateY(20px) scale(0.95);
     }
     to {
       opacity: 1;
@@ -194,12 +203,12 @@
     }
   }
 
-  @keyframes pulse-glow {
+  @keyframes pulse-soft {
     0%, 100% {
-      box-shadow: 0 0 0 0 hsl(var(--destructive) / 0.4);
+      box-shadow: 0 0 0 0 hsl(var(--destructive) / 0.3);
     }
     50% {
-      box-shadow: 0 0 30px 15px hsl(var(--destructive) / 0.1);
+      box-shadow: 0 0 20px 8px hsl(var(--destructive) / 0.1);
     }
   }
 
@@ -208,50 +217,48 @@
       transform: translateY(0) rotate(0deg);
     }
     25% {
-      transform: translateY(-3px) rotate(-8deg);
+      transform: translateY(-2px) rotate(-5deg);
     }
     75% {
-      transform: translateY(-3px) rotate(8deg);
+      transform: translateY(-2px) rotate(5deg);
     }
   }
 
-  @keyframes float {
+  @keyframes float-gentle {
     0%, 100% {
       transform: translateY(0);
     }
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-8px);
     }
   }
 
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
+  @keyframes sway {
+    0%, 100% {
+      transform: rotate(-2deg);
     }
-    100% {
-      background-position: 200% 0;
+    50% {
+      transform: rotate(2deg);
     }
   }
 
   .animate-slide-up {
-    animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
-  .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+  .animate-pulse-soft {
+    animation: pulse-soft 2s ease-in-out infinite;
   }
 
   .animate-ant-walk {
-    animation: ant-walk 0.35s ease-in-out infinite;
+    animation: ant-walk 0.4s ease-in-out infinite;
   }
 
-  .animate-float {
-    animation: float 4s ease-in-out infinite;
+  .animate-float-gentle {
+    animation: float-gentle 4s ease-in-out infinite;
   }
 
-  .shimmer {
-    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
-    background-size: 200% 100%;
-    animation: shimmer 2s infinite;
+  .animate-sway {
+    animation: sway 3s ease-in-out infinite;
   }
 }
