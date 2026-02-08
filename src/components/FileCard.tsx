@@ -1,6 +1,7 @@
-import { FileText, Shield, ShieldAlert } from "lucide-react";
+import { FileText, Shield, ShieldAlert, Clock } from "lucide-react";
+import { motion } from "framer-motion";
 
-export type FileStatus = "pending" | "safe" | "infected";
+export type FileStatus = "pending" | "safe" | "infected" | "scanning";
 
 interface FileCardProps {
   fileName: string;
@@ -12,9 +13,15 @@ const FileCard = ({ fileName, status, id }: FileCardProps) => {
   const statusConfig = {
     pending: {
       className: "file-card file-card-pending",
-      icon: <Shield className="w-4 h-4 text-muted-foreground" />,
-      label: "Pending",
+      icon: <Clock className="w-4 h-4 text-muted-foreground" />,
+      label: "Ready",
       labelClass: "text-muted-foreground",
+    },
+    scanning: {
+      className: "file-card file-card-scanning",
+      icon: <Shield className="w-4 h-4 text-primary animate-pulse" />,
+      label: "Scanning...",
+      labelClass: "text-primary font-medium",
     },
     safe: {
       className: "file-card file-card-safe",
@@ -23,7 +30,7 @@ const FileCard = ({ fileName, status, id }: FileCardProps) => {
       labelClass: "text-success font-semibold",
     },
     infected: {
-      className: "file-card file-card-infected animate-pulse-soft",
+      className: "file-card file-card-infected",
       icon: <ShieldAlert className="w-4 h-4 text-destructive" />,
       label: "Infected",
       labelClass: "text-destructive font-semibold",
@@ -33,7 +40,18 @@ const FileCard = ({ fileName, status, id }: FileCardProps) => {
   const config = statusConfig[status];
 
   return (
-    <div id={id} className={config.className}>
+    <motion.div 
+      id={id} 
+      className={config.className}
+      animate={status === "infected" ? { 
+        boxShadow: ["0 0 0 0 rgba(239, 68, 68, 0)", "0 0 0 8px rgba(239, 68, 68, 0.2)", "0 0 0 0 rgba(239, 68, 68, 0)"]
+      } : {}}
+      transition={status === "infected" ? { 
+        duration: 1.5, 
+        repeat: Infinity,
+        ease: "easeInOut"
+      } : {}}
+    >
       <div className="flex items-start gap-2">
         <div className="p-2 bg-muted/50 rounded-xl">
           <FileText className="w-5 h-5 text-muted-foreground" />
@@ -48,7 +66,7 @@ const FileCard = ({ fileName, status, id }: FileCardProps) => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

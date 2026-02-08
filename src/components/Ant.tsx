@@ -1,26 +1,39 @@
+import { motion } from "framer-motion";
+
 interface AntProps {
   id: string;
   x: number;
   y: number;
-  targetX: number;
-  targetY: number;
+  startX: number;
+  startY: number;
   isMoving: boolean;
 }
 
-const Ant = ({ x, y, targetX, targetY, isMoving }: AntProps) => {
-  const angle = Math.atan2(targetY - y, targetX - x) * (180 / Math.PI);
-  
+const Ant = ({ x, y, startX, startY, isMoving }: AntProps) => {
   return (
-    <div
-      className={`ant-agent ${isMoving ? "animate-ant-walk" : ""}`}
-      style={{
-        left: `${x}px`,
-        top: `${y}px`,
-        transform: `rotate(${angle + 90}deg)`,
+    <motion.div
+      className="ant-agent"
+      initial={{ 
+        left: startX, 
+        top: startY,
+        opacity: 0,
+        scale: 0.5
+      }}
+      animate={{ 
+        left: isMoving ? x : startX, 
+        top: isMoving ? y : startY,
+        opacity: 1,
+        scale: 1
+      }}
+      transition={{ 
+        left: { duration: 1.2, ease: "easeInOut" },
+        top: { duration: 1.2, ease: "easeInOut" },
+        opacity: { duration: 0.3 },
+        scale: { duration: 0.3 }
       }}
     >
-      🐜
-    </div>
+      <span className="text-lg animate-ant-walk">🐜</span>
+    </motion.div>
   );
 };
 
